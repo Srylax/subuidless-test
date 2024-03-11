@@ -1,10 +1,12 @@
 {
   "packages": [
     "rustup@latest",
-    "libiconv@latest"
+    "libiconv@latest",
+    "docker@latest"
   ],
   "env": {
-    "PROJECT_DIR": "$PWD"
+    "PROJECT_DIR": "$PWD",
+    "DOCKER_HOST": "unix://$XDG_RUNTIME_DIR/docker.sock"
   },
   "shell": {
     "init_hook": [

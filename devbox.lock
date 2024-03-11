@@ -1,6 +1,26 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "docker@latest": {
+      "last_modified": "2024-03-02T13:37:51Z",
+      "resolved": "github:NixOS/nixpkgs/fa9a51752f1b5de583ad5213eb621be071806663#docker",
+      "source": "devbox-search",
+      "version": "24.0.5",
+      "systems": {
+        "aarch64-darwin": {
+          "store_path": "/nix/store/m11spa8vqz4mfxzz25r52q99c4im71az-docker-24.0.5"
+        },
+        "aarch64-linux": {
+          "store_path": "/nix/store/hlhjb4cg3x638i9hyqcl1zyajlvwsmnc-docker-24.0.5"
+        },
+        "x86_64-darwin": {
+          "store_path": "/nix/store/b8pbfaamqfqb6j0c5zbl6h0i7qgspzwk-docker-24.0.5"
+        },
+        "x86_64-linux": {
+          "store_path": "/nix/store/g0wwcj2qzv5138ihfndgp21zphp4bzgs-docker-24.0.5"
+        }
+      }
+    },
     "libiconv@latest": {
       "last_modified": "2024-02-24T23:06:34Z",
       "resolved": "github:NixOS/nixpkgs/9a9dae8f6319600fa9aebde37f340975cab4b8c0#libiconv",
