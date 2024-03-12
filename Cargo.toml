@@ -1,2 +1,2 @@
-workspace = { members = [ "client","executor"] }
+workspace = { members = [ "client","executor", "protocol"] }
 
