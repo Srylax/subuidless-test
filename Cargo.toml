@@ -1,2 +1,3 @@
-workspace = { members = [ "client","executor", "protocol"] }
-
+[workspace]
+members = [ "client", "protocol", "protocol-proc"]
+resolver = "2"

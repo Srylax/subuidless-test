@@ -1,58 +1,16 @@
-use anyhow::{anyhow, Result};
-use nix::fcntl::AtFlags;
-use nix::sys::stat::{fstatat, FileStat};
-use nix::unistd::{fchownat, Gid, Uid};
-use serde::{Deserialize, Serialize, Serializer};
-use std::os::fd::RawFd;
-use std::path::PathBuf;
+pub mod executor;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub enum Syscalls {
-    Fstatat {
-        dirfd: Option<RawFd>,
-        pathname: PathBuf,
-        f: i32,
-    },
-    Fchownat {
-        dirfd: Option<RawFd>,
-        path: PathBuf,
-        owner: Option<u32>,
-        group: Option<u32>,
-        flag: i32,
-    },
-}
+use anyhow::Result;
+use nix::sys::stat::FileStat;
+use serde::{Deserialize, Serialize};
 
-impl Syscalls {
-    /// Executes the Syscall by mapping the given options to the `nix` crate.
-    /// If the Syscall has a return value it gets serialized with `serde_json` and returned as a JSON String
-    pub fn execute(self) -> Result<Option<String>> {
-        Ok(match self {
-            Syscalls::Fstatat { dirfd, pathname, f } => {
-                let fstat = fstatat(
-                    dirfd,
-                    &pathname,
-                    AtFlags::from_bits(f).ok_or(anyhow!("Unknown Bits set"))?,
-                )?;
-                Some(serde_json::to_string(&FileStatDef::from(fstat))?)
-            }
-            Syscalls::Fchownat {
-                dirfd,
-                path,
-                owner,
-                group,
-                flag,
-            } => {
-                fchownat(
-                    dirfd,
-                    &path,
-                    owner.map(Uid::from_raw),
-                    group.map(Gid::from_raw),
-                    AtFlags::from_bits(flag).ok_or(anyhow!("Unknown Bits set"))?,
-                )?;
-                None
-            }
-        })
-    }
+pub use docker_command;
+use nix::libc::{blksize_t, nlink_t};
+pub use protocol_proc;
+
+#[typetag::serde(tag = "type")]
+pub trait Syscall {
+    fn execute(&self) -> Result<Option<String>>;
 }
 
 /// Copy of `nix` `FileStat` for serde
@@ -60,13 +18,13 @@ impl Syscalls {
 pub struct FileStatDef {
     pub st_dev: u64,
     pub st_ino: u64,
-    pub st_nlink: u32,
+    pub st_nlink: nlink_t,
     pub st_mode: u32,
     pub st_uid: u32,
     pub st_gid: u32,
     pub st_rdev: u64,
     pub st_size: i64,
-    pub st_blksize: i32,
+    pub st_blksize: blksize_t,
     pub st_blocks: i64,
     pub st_atime: i64,
     pub st_atime_nsec: i64,

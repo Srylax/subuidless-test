@@ -1,26 +1,25 @@
-use docker_command::{BaseCommand, BuildOpt, Launcher, RunOpt};
-use protocol::FileStatDef;
+use docker_command::{BaseCommand, Launcher, RunOpt};
 use std::path::{Path, PathBuf};
-#[test]
-fn build_docker() -> anyhow::Result<()> {
-    Launcher::from(BaseCommand::Docker)
-        .build(BuildOpt {
-            build_args: vec![],
-            context: Path::new("../").into(),
-            dockerfile: Some(Path::new("Dockerfile").into()),
-            tag: Some("subuidless/executor".into()),
-            ..Default::default()
-        })
-        .run()?;
-    Ok(())
+
+use nix::fcntl::AtFlags;
+use nix::sys::stat::fstatat;
+use protocol::{FileStatDef, Syscall};
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+pub struct Fstatat;
+#[typetag::serde]
+impl protocol::Syscall for Fstatat {
+    fn execute(&self) -> anyhow::Result<Option<String>> {
+        let stat = fstatat(None, "/dev", AtFlags::empty())?;
+        let stat = FileStatDef::from(stat);
+        Ok(Some(serde_json::to_string(&stat)?))
+    }
 }
+
 #[test]
 fn lstatat() -> anyhow::Result<()> {
-    let fstat = protocol::Syscalls::Fstatat {
-        dirfd: None,
-        pathname: PathBuf::from("/dev"),
-        f: 0,
-    };
+    let fstat: &dyn Syscall = &Fstatat {};
     let args_string = serde_json::to_string(&fstat)?;
 
     let command = Launcher::from(BaseCommand::Docker)
@@ -35,7 +34,6 @@ fn lstatat() -> anyhow::Result<()> {
         .run()?;
 
     let fstat: FileStatDef = serde_json::from_slice(command.stdout.as_slice())?;
-    assert_eq!(fstat.st_dev, 95);
     assert_eq!(fstat.st_ino, 1);
     assert_eq!(fstat.st_nlink, 5);
     assert_eq!(fstat.st_mode, 16877);

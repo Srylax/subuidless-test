@@ -12,3 +12,13 @@ timeit = "0.1.2"
 protocol = { path = "../protocol" }
 serde_json = "1.0.114"
 nix = { version = "0.28.0", features = ["user","fs"] }
+serde_closure = "0.3.3"
+typetag = "0.2.16"
+serde = "1.0.197"
+
+[profile.dev]
+lto = true
+
+[[bin]]
+name = "executor"
+path = "tests/executor.rs"
