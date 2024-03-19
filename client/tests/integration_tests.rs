@@ -3,11 +3,11 @@ use std::path::{Path, PathBuf};
 
 use nix::fcntl::AtFlags;
 use nix::sys::stat::fstatat;
-use protocol::{FileStatDef, Syscall};
+use protocol::{docker_test, FileStatDef, Syscall};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct Fstatat;
+pub struct Fstatat {}
 #[typetag::serde]
 impl protocol::Syscall for Fstatat {
     fn execute(&self) -> anyhow::Result<Option<String>> {
@@ -44,3 +44,7 @@ fn lstatat() -> anyhow::Result<()> {
     assert_eq!(fstat.st_blocks, 0);
     Ok(())
 }
+
+docker_test!(Lstatat { path: String }, self {
+    FileStatDef::from(fstatat(None, self.path.as_str(), AtFlags::empty())?)
+});

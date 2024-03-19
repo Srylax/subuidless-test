@@ -1,3 +1,4 @@
+use serde::Serialize;
 #[macro_export]
 macro_rules! executor {
     () => {
@@ -19,6 +20,31 @@ macro_rules! executor {
                 stdout().write_all(str.as_ref())?; // Write Response to stdout
             }
             Ok(())
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! docker_test {
+    (
+        $struct_name:ident {
+            $(
+             $field_name:ident : $field_type:ty
+            ),*
+        },
+        $self:ident $syscall:block
+    ) => {
+        #[derive(Serialize, Deserialize)]
+        pub struct $struct_name {
+            $(
+                $field_name : $field_type,
+            )*
+        }
+        #[typetag::serde]
+        impl protocol::Syscall for $struct_name {
+            fn execute(&$self) -> anyhow::Result<Option<String>> {
+                Ok(Some(serde_json::to_string(&$syscall)?))
+            }
         }
     };
 }
