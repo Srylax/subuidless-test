@@ -1,50 +1,55 @@
-use docker_command::{BaseCommand, Launcher, RunOpt};
-use std::path::{Path, PathBuf};
-
 use nix::fcntl::AtFlags;
+use nix::libc::c_int;
 use nix::sys::stat::fstatat;
-use protocol::{docker_test, FileStatDef, Syscall};
+use proptest::prelude::*;
+use proptest::prelude::{BoxedStrategy, Just, Strategy};
+use proptest::strategy::Union;
+use proptest_derive::Arbitrary;
+use protocol::{exec_docker, Syscall};
+use protocol::{syscall, FileStatDef};
 use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::os::fd::AsRawFd;
 
-#[derive(Serialize, Deserialize)]
-pub struct Fstatat {}
-#[typetag::serde]
-impl protocol::Syscall for Fstatat {
-    fn execute(&self) -> anyhow::Result<Option<String>> {
-        let stat = fstatat(None, "/dev", AtFlags::empty())?;
-        let stat = FileStatDef::from(stat);
-        Ok(Some(serde_json::to_string(&stat)?))
-    }
+fn flag_strategy() -> BoxedStrategy<c_int> {
+    prop_oneof![
+        10 => Just(AtFlags::empty().bits()),
+        1 => Just(AtFlags::AT_SYMLINK_FOLLOW.bits()),
+        1 => Just(AtFlags::AT_SYMLINK_NOFOLLOW.bits()),
+        1 => Just(AtFlags::AT_NO_AUTOMOUNT.bits()),
+        1 => Just(AtFlags::AT_EMPTY_PATH.bits()),
+        1 => Just(AtFlags::AT_EACCESS.bits())
+    ]
+    .boxed()
 }
 
-#[test]
-fn lstatat() -> anyhow::Result<()> {
-    let fstat: &dyn Syscall = &Fstatat {};
-    let args_string = serde_json::to_string(&fstat)?;
-
-    let command = Launcher::from(BaseCommand::Docker)
-        .run(RunOpt {
-            image: "subuidless/executor:latest".to_string(),
-            remove: true,
-            command: Some(Path::new("executor").into()),
-            args: vec![args_string.into()],
-            ..Default::default()
-        })
-        .enable_capture()
-        .run()?;
-
-    let fstat: FileStatDef = serde_json::from_slice(command.stdout.as_slice())?;
-    assert_eq!(fstat.st_ino, 1);
-    assert_eq!(fstat.st_nlink, 5);
-    assert_eq!(fstat.st_mode, 16877);
-    assert_eq!(fstat.st_uid, 0);
-    assert_eq!(fstat.st_gid, 0);
-    assert_eq!(fstat.st_rdev, 0);
-    assert_eq!(fstat.st_size, 340);
-    assert_eq!(fstat.st_blocks, 0);
-    Ok(())
+fn file_strategy() -> impl Strategy<Value = String> {
+    Union::new(include_str!("./files.txt").lines())
 }
 
-docker_test!(Lstatat { path: String }, self {
-    FileStatDef::from(fstatat(None, self.path.as_str(), AtFlags::empty())?)
+fn dir_strategy() -> impl Strategy<Value = Option<String>> {
+    Union::new(
+        include_str!("./files.txt")
+            .lines()
+            .map(|line| Just(Some(line.to_string()))),
+    )
+    .prop_union(Union::new_weighted(vec![(10, Just(None))]))
+}
+
+syscall!(Fstatat {
+        #[proptest(strategy = "file_strategy()")]
+        path: String,
+        #[proptest(strategy = "dir_strategy()")]
+        dir: Option<String>,
+        #[proptest(strategy = "flag_strategy()")]
+        flags: i32
+    },
+    self {
+        let fd = self.dir.as_ref().and_then(|dir|File::open(dir).ok()).map(|file|file.as_raw_fd());
+        FileStatDef::from(fstatat(fd, self.path.as_str(), AtFlags::from_bits_retain(self.flags))?)
+    },
+    fstat((left,right): FileStatDef) {
+        prop_assert_eq!(left.st_uid, right.st_uid);
+        prop_assert_eq!(left.st_gid, right.st_gid);
+        Ok::<(),TestCaseError>(())
 });

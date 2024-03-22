@@ -12,5 +12,8 @@ serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 typetag = "0.2.16"
 docker-command = "5.0.0"
-
 protocol-proc = { path = "../protocol-proc"}
+
+[dev-dependencies]
+proptest = "1.4.0"
+proptest-derive = "0.4.0"

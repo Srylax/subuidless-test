@@ -3,10 +3,78 @@ pub mod executor;
 use anyhow::Result;
 use nix::sys::stat::FileStat;
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 
 pub use docker_command;
+use docker_command::command_run::Output;
+use docker_command::{BaseCommand, Launcher, RunOpt};
 use nix::libc::{blksize_t, nlink_t};
 pub use protocol_proc;
+
+#[macro_export]
+macro_rules! syscall {
+    (
+        $struct_name:ident {
+            $(
+             $(#[$field_meta:meta])*
+             $field_name:ident : $field_type:ty
+            ),*
+        },
+        $self:ident $syscall:block,
+
+        $test_name:ident(($left:ident,$right:ident): $de_type:ident) $compare:block
+    ) => {
+
+        #[derive(Debug, Arbitrary, Serialize, Deserialize, PartialEq)]
+        struct $struct_name {
+            $(
+                $(#[$field_meta])*
+                $field_name : $field_type,
+            )*
+        }
+        #[typetag::serde]
+        impl protocol::Syscall for $struct_name {
+            fn execute(&$self) -> anyhow::Result<Option<String>> {
+                Ok(Some(serde_json::to_string(&$syscall)?))
+            }
+        }
+
+        proptest! {
+            #[test]
+            fn $test_name(stat: $struct_name) {
+                let stat: &dyn Syscall = &stat;
+                let args_string = serde_json::to_string(&stat).expect("Could not serialize");
+
+                let left = exec_docker(&args_string);
+                let right = exec_docker(&args_string);
+
+                prop_assert_eq!(left.status, right.status);
+                if left.status.success() {
+                    let $left: $de_type = serde_json::from_slice(left.stdout.as_slice()).expect("Could not deserialize despite command success");
+                    let $right: $de_type = serde_json::from_slice(right.stdout.as_slice()).expect("Could not deserialize despite command success");
+                    $compare?;
+                } else {
+                    prop_assert_eq!(left, right);
+                }
+            }
+        }
+    };
+}
+
+pub fn exec_docker(syscall: &String) -> Output {
+    Launcher::from(BaseCommand::Docker)
+        .run(RunOpt {
+            image: "subuidless/executor:latest".to_string(),
+            remove: true,
+            command: Some(Path::new("executor").into()),
+            args: vec![syscall.into()],
+            ..Default::default()
+        })
+        .enable_capture()
+        .disable_check()
+        .run()
+        .expect("Could not run docker")
+}
 
 #[typetag::serde(tag = "type")]
 pub trait Syscall {
