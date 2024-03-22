@@ -1,8 +1,6 @@
-use serde::Serialize;
 #[macro_export]
 macro_rules! executor {
     () => {
-        protocol_proc::create_docker!();
         use protocol::Syscall;
         use std::env;
         use std::error::Error;
