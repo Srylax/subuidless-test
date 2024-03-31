@@ -5,11 +5,12 @@ use proptest::prelude::*;
 use proptest::prelude::{BoxedStrategy, Just, Strategy};
 use proptest::strategy::Union;
 use proptest_derive::Arbitrary;
-use protocol::{exec_docker, Syscall};
+use protocol::{ exec_docker, Syscall};
 use protocol::{syscall, FileStatDef};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::os::fd::AsRawFd;
+
 
 fn flag_strategy() -> BoxedStrategy<c_int> {
     prop_oneof![
@@ -48,7 +49,7 @@ syscall!(Fstatat {
         let fd = self.dir.as_ref().and_then(|dir|File::open(dir).ok()).map(|file|file.as_raw_fd());
         FileStatDef::from(fstatat(fd, self.path.as_str(), AtFlags::from_bits_retain(self.flags))?)
     },
-    fstat((left,right): FileStatDef) {
+    test_fstatat(fstatat, (left,right): FileStatDef) {
         prop_assert_eq!(left.st_uid, right.st_uid);
         prop_assert_eq!(left.st_gid, right.st_gid);
         Ok::<(),TestCaseError>(())

@@ -1,5 +1,7 @@
 pub mod executor;
 
+use std::ffi::{OsStr, OsString};
+use std::io::Read;
 use anyhow::Result;
 use nix::sys::stat::FileStat;
 use serde::{Deserialize, Serialize};
@@ -22,7 +24,7 @@ macro_rules! syscall {
         },
         $self:ident $syscall:block,
 
-        $test_name:ident(($left:ident,$right:ident): $de_type:ident) $compare:block
+        $test_name:ident($struct_value:ident, ($left:ident,$right:ident): $de_type:ident) $compare:block
     ) => {
 
         #[derive(Debug, Arbitrary, Serialize, Deserialize, PartialEq)]
@@ -41,12 +43,19 @@ macro_rules! syscall {
 
         proptest! {
             #[test]
-            fn $test_name(stat: $struct_name) {
-                let stat: &dyn Syscall = &stat;
-                let args_string = serde_json::to_string(&stat).expect("Could not serialize");
+            fn $test_name($struct_value: $struct_name) {
+                let syscall: &dyn Syscall = &$struct_value;
+                let args_string = serde_json::to_string(&syscall).expect("Could not serialize");
 
-                let left = exec_docker(&args_string);
-                let right = exec_docker(&args_string);
+                let mut args:Vec<std::ffi::OsString> = option_env!("SUBUIDLESS_ARGS")
+                    .map(|args|serde_json::from_str(args)
+                    .expect("Invalid Docker Arguments set"))
+                    .unwrap_or_default();
+
+                args.push((&args_string).into());
+
+                let left = exec_docker(args);
+                let right = exec_docker(vec![args_string.into()]);
 
                 prop_assert_eq!(left.status, right.status);
                 if left.status.success() {
@@ -61,13 +70,13 @@ macro_rules! syscall {
     };
 }
 
-pub fn exec_docker(syscall: &String) -> Output {
+pub fn exec_docker(args: Vec<OsString>) -> Output {
     Launcher::from(BaseCommand::Docker)
         .run(RunOpt {
             image: "subuidless/executor:latest".to_string(),
             remove: true,
             command: Some(Path::new("executor").into()),
-            args: vec![syscall.into()],
+            args,
             ..Default::default()
         })
         .enable_capture()
