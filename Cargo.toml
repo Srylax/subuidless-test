@@ -1,3 +1,19 @@
 [workspace]
-members = [ "client", "protocol", "protocol-proc"]
+members = ["client", "protocol", "protocol-proc"]
 resolver = "2"
+
+[workspace.lints.rust]
+future_incompatible = "warn"
+nonstandard_style = "warn"
+rust_2018_idioms = "warn"
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+all = "warn"
+pedantic = "warn"
+style = "warn"
+perf = "warn"
+complexity = "warn"
+suspicous = "warn"
+correctness = "warn"
+cargo = "warn"

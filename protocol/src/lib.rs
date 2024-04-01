@@ -1,7 +1,5 @@
-pub mod executor;
 
-use std::ffi::{OsStr, OsString};
-use std::io::Read;
+use std::ffi::{OsString};
 use anyhow::Result;
 use nix::sys::stat::FileStat;
 use serde::{Deserialize, Serialize};
@@ -34,7 +32,7 @@ macro_rules! syscall {
                 $field_name : $field_type,
             )*
         }
-        
+
         // Implementation des Syscall Traits
         #[typetag::serde]
         impl protocol::Syscall for $struct_name {
@@ -74,6 +72,31 @@ macro_rules! syscall {
         }
     };
 }
+
+#[macro_export]
+macro_rules! executor {
+    () => {
+        use protocol::Syscall;
+        use std::env;
+        use std::error::Error;
+        use std::io::{stdout, Write};
+
+        use protocol::protocol_proc;
+
+        /// Parses the first argument as a `protocol::Syscalls` and executes the given Syscall
+        /// Return Values get written to stdout
+        fn main() -> Result<(), Box<dyn Error>> {
+            let args = env::args().nth(1).expect("No Argument provided");
+            let syscall: Box<dyn Syscall> = serde_json::from_str(&args)?; // Deserialize to Syscall
+            if let Some(str) = syscall.execute()? {
+                // Execute Syscall
+                stdout().write_all(str.as_ref())?; // Write Response to stdout
+            }
+            Ok(())
+        }
+    };
+}
+
 
 pub fn exec_docker(args: Vec<OsString>) -> Output {
     Launcher::from(BaseCommand::Docker)

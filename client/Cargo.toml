@@ -23,6 +23,10 @@ protocol = { path = "../protocol" }
 [profile.dev]
 lto = true
 
-[[bin]]
-name = "executor"
-path = "tests/executor.rs"
+[lints]
+workspace = true
+
+
+#[[bin]]
+#name = "executor"
+#path = "tests/executor.rs"
