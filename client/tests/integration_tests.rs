@@ -37,7 +37,9 @@ fn dir_strategy() -> impl Strategy<Value = Option<String>> {
     .prop_union(Union::new_weighted(vec![(10, Just(None))]))
 }
 
-syscall!(Fstatat {
+syscall!(
+    // Arrange
+    Fstatat {
         #[proptest(strategy = "file_strategy()")]
         path: String,
         #[proptest(strategy = "dir_strategy()")]
@@ -45,10 +47,12 @@ syscall!(Fstatat {
         #[proptest(strategy = "flag_strategy()")]
         flags: i32
     },
+    // Act
     self {
         let fd = self.dir.as_ref().and_then(|dir|File::open(dir).ok()).map(|file|file.as_raw_fd());
         FileStatDef::from(fstatat(fd, self.path.as_str(), AtFlags::from_bits_retain(self.flags))?)
     },
+    // Assert
     test_fstatat(fstatat, (left,right): FileStatDef) {
         prop_assert_eq!(left.st_uid, right.st_uid);
         prop_assert_eq!(left.st_gid, right.st_gid);

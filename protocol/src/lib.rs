@@ -34,6 +34,8 @@ macro_rules! syscall {
                 $field_name : $field_type,
             )*
         }
+        
+        // Implementation des Syscall Traits
         #[typetag::serde]
         impl protocol::Syscall for $struct_name {
             fn execute(&$self) -> anyhow::Result<Option<String>> {
@@ -44,6 +46,7 @@ macro_rules! syscall {
         proptest! {
             #[test]
             fn $test_name($struct_value: $struct_name) {
+                // Arrange
                 let syscall: &dyn Syscall = &$struct_value;
                 let args_string = serde_json::to_string(&syscall).expect("Could not serialize");
 
@@ -54,9 +57,11 @@ macro_rules! syscall {
 
                 args.push((&args_string).into());
 
+                // Act
                 let left = exec_docker(args);
                 let right = exec_docker(vec![args_string.into()]);
 
+                // Assert
                 prop_assert_eq!(left.status, right.status);
                 if left.status.success() {
                     let $left: $de_type = serde_json::from_slice(left.stdout.as_slice()).expect("Could not deserialize despite command success");
