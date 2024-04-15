@@ -3,16 +3,16 @@ use std::ffi::{OsString};
 use anyhow::Result;
 use std::path::Path;
 
-pub use docker_command;
 use docker_command::command_run::{ ErrorKind, Output};
 use docker_command::{BaseCommand, Launcher, RunOpt};
-pub use subuidless_test_proc;
 pub use serde;
 pub use anyhow;
 pub use serde_json;
 pub use typetag;
 pub use proptest_derive;
 pub use proptest;
+pub use docker_command;
+pub use subuidless_test_proc::create_docker;
 
 #[macro_export]
 macro_rules! syscall {
@@ -86,7 +86,7 @@ macro_rules! executor {
             let syscall: Box<dyn $crate::Syscall> = $crate::serde_json::from_str(&args)?; // Deserialize to Syscall
             if let Some(str) = syscall.execute()? {
                 // Execute Syscall
-                std::io::Write::write_all(std::io::stdout(), str.as_ref())?;// Write Response to stdout
+                std::io::Write::write_all(&mut std::io::stdout(), str.as_ref())?;// Write Response to stdout
             }
             Ok(())
         }
