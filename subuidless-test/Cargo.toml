@@ -1,5 +1,5 @@
 [package]
-name = "client"
+name = "subuidless-test"
 version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0-or-later"
@@ -8,25 +8,18 @@ license = "AGPL-3.0-or-later"
 
 [dependencies]
 anyhow = "1.0.80"
-docker-command = "5.0.0"
+nix = { version = "0.28.0", features = ["fs", "user"] }
+serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
-nix = { version = "0.28.0", features = ["user", "fs"] }
-serde_closure = "0.3.3"
 typetag = "0.2.16"
-serde = "1.0.197"
+docker-command = "5.0.0"
+subuidless-test-proc = { path = "../subuidless-test-proc" }
+proptest-derive = "0.4.0"
+proptest = "1.4.0"
 
+[dev-dependencies]
 proptest = "1.4.0"
 proptest-derive = "0.4.0"
-protocol = { path = "../protocol" }
-
-
-[profile.dev]
-lto = true
 
 [lints]
 workspace = true
-
-
-#[[bin]]
-#name = "executor"
-#path = "tests/executor.rs"

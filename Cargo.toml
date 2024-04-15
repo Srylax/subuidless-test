@@ -1,5 +1,5 @@
 [workspace]
-members = ["client", "protocol", "protocol-proc"]
+members = ["subuidless-test", "subuidless-test-proc"]
 resolver = "2"
 
 [workspace.lints.rust]
@@ -7,13 +7,34 @@ future_incompatible = "warn"
 nonstandard_style = "warn"
 rust_2018_idioms = "warn"
 unsafe_code = "deny"
+non-ascii-idents = "deny"
+missing_docs = "warn"
 
 [workspace.lints.clippy]
 all = "warn"
 pedantic = "warn"
+similar_names = { level = "allow", priority = 1 }
+missing_errors_doc = { level = "allow", priority = 1 }
 style = "warn"
 perf = "warn"
 complexity = "warn"
-suspicous = "warn"
+suspicious = "warn"
 correctness = "warn"
 cargo = "warn"
+restriction = "warn"
+blanket_clippy_restriction_lints = { level = "allow", priority = 1 }
+mod_module_files = { level = "allow", priority = 1 }
+missing_docs_in_private_items = { level = "allow", priority = 1 }
+missing_inline_in_public_items = { level = "allow", priority = 1 }
+implicit_return = { level = "allow", priority = 1 }
+question_mark_used = { level = "allow", priority = 1 }
+separated_literal_suffix = { level = "allow", priority = 1 }
+std_instead_of_alloc = { level = "allow", priority = 1 }
+std_instead_of_core = { level = "allow", priority = 1 }
+missing_trait_methods = { level = "allow", priority = 1 }
+shadow_reuse = { level = "allow", priority = 1 }
+pub_with_shorthand = { level = "allow", priority = 1 }
+single_call_fn = { level = "allow", priority = 1 }
+error_impl_error = { level = "allow", priority = 1 }
+self_named_module_files = { level = "allow", priority = 1 }
+pub_use = { level = "allow", priority = 1 }

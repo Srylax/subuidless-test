@@ -48,22 +48,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "docker-command",
- "nix",
- "proptest",
- "proptest-derive",
- "protocol",
- "serde",
- "serde_closure",
- "serde_json",
- "typetag",
-]
-
-[[package]]
 name = "command-run"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -261,30 +245,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "protocol"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "docker-command",
- "nix",
- "proptest",
- "proptest-derive",
- "protocol-proc",
- "serde",
- "serde_json",
- "typetag",
-]
-
-[[package]]
-name = "protocol-proc"
-version = "0.1.0"
-dependencies = [
- "copy_dir",
- "docker-command",
- "syn 2.0.53",
-]
-
-[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -358,12 +318,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rustversion"
-version = "1.0.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
-
-[[package]]
 name = "rusty-fork"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -400,28 +354,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_closure"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9659437bcfbf4dd061a5e1f7994312990ac5b24d781f7ce577eefc3a27792da0"
-dependencies = [
- "rustversion",
- "serde",
- "serde_closure_derive",
-]
-
-[[package]]
-name = "serde_closure_derive"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a6bb4d612b5caad466a9a09ee550445e34123a74075607cc0d882ff1ca28f46"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "serde_derive"
 version = "1.0.197"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -441,6 +373,30 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
+]
+
+[[package]]
+name = "subuidless-test"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "docker-command",
+ "nix",
+ "proptest",
+ "proptest-derive",
+ "serde",
+ "serde_json",
+ "subuidless-test-proc",
+ "typetag",
+]
+
+[[package]]
+name = "subuidless-test-proc"
+version = "0.1.0"
+dependencies = [
+ "copy_dir",
+ "docker-command",
+ "syn 2.0.53",
 ]
 
 [[package]]
