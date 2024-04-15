@@ -5,14 +5,15 @@ use std::path::Path;
 
 use docker_command::command_run::{ ErrorKind, Output};
 use docker_command::{BaseCommand, Launcher, RunOpt};
-pub use serde;
-pub use anyhow;
-pub use serde_json;
-pub use typetag;
-pub use proptest_derive;
-pub use proptest;
-pub use docker_command;
 pub use subuidless_test_proc::create_docker;
+
+pub extern crate serde;
+pub extern crate proptest_derive;
+pub extern crate proptest;
+pub extern crate docker_command;
+pub extern crate typetag;
+pub extern crate serde_json;
+pub extern crate anyhow;
 
 #[macro_export]
 macro_rules! syscall {
