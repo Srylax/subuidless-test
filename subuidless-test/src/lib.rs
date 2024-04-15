@@ -25,7 +25,7 @@ macro_rules! syscall {
         },
         $self:ident $syscall:block,
 
-        $test_name:ident($struct_value:ident, ($left:ident,$right:ident): $de_type:ident) $compare:block
+        $test_name:ident($struct_value:ident, ($left:ident,$right:ident): $de_type:ty) $compare:block
     ) => {
 
         #[derive(Debug, $crate::proptest_derive::Arbitrary, $crate::serde::Serialize, $crate::serde::Deserialize, PartialEq)]
