@@ -101,9 +101,8 @@ pub fn exec_docker(args: Vec<OsString>) -> Result<Output, ErrorKind> {
             image: "subuidless/executor:latest".to_owned(),
             remove: true,
             command: Some(Path::new("executor").into()),
-            args,
             ..Default::default()
-        })
+        }).add_args(args)
         .enable_capture()
         .disable_check()
         .run()
