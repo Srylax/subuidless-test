@@ -31,7 +31,7 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
     WORKDIR /usr/src/executor
     {copy_dirs}
     WORKDIR /usr/src/executor/{bin_dir}
-    RUN cargo install --bin executor --path .");
+    RUN cargo install --bin executor --path . -F executor");
 
     dockerfile
         .write_all(docker_content.as_bytes())
