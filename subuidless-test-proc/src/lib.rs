@@ -48,14 +48,14 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
             .expect("No Parent")
             .join(path);
         if path.is_dir() {
-            create_dir_all(&path).expect("Could not create target dir");
-            remove_dir(&path).expect("Could not remove target dir");
-            
+            create_dir_all(&tmp_path).expect("Could not create target dir");
+            remove_dir(&tmp_path).expect(&format!("Could not remove target dir"));
+
             copy_dir(&path, &tmp_path).expect(&format!("Could not copy dir. CWD: {:?}, path: {:?}, tmp_path: {:?}", current_dir().expect("No current dir"),path,tmp_path));
         } else { 
             std::fs::copy(&path, &tmp_path).expect(&format!("Could not copy file. CWD: {:?}, path: {:?}, tmp_path: {:?}", current_dir().expect("No current dir"),path,tmp_path));
         }
-        
+
     }
 
     Launcher::from(BaseCommand::Docker)
