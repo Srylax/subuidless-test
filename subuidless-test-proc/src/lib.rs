@@ -2,6 +2,7 @@ use copy_dir::copy_dir;
 use docker_command::{BaseCommand, BuildOpt, Launcher};
 use proc_macro::TokenStream;
 use std::env;
+use std::env::current_dir;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
@@ -49,9 +50,8 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
         if path.is_dir() {
             copy_dir(path, &tmp_path).expect("Could not copy dir");
         } else { 
-            std::fs::copy(path,tmp_path).expect("Could not copy file");
+            std::fs::copy(path, tmp_path).expect(&format!("Could not copy file. CWD: {:?}",current_dir().expect("No current dir")));
         }
-        
         
     }
 
