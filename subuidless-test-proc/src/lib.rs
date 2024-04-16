@@ -17,13 +17,13 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
 
     let values = parse_macro_input!(input with Punctuated::<LitStr, Token![,]>::parse_terminated);
 
-    let paths = values.iter().map(LitStr::value);
+    let mut paths = values.iter().map(LitStr::value);
 
     let tmp_path = PathBuf::from(tmpdir);
     let mut dockerfile = File::create(tmp_path.join("Dockerfile")).expect("Could not open File");
-    
+
+    let bin_dir = paths.next().expect("No Binary dir specified");
     let copy_dirs = paths.clone().map(|path|format!("COPY {path} {path}")).collect::<Vec<String>>().join("\n");
-    let bin_dir = paths.clone().next().expect("No Binary dir specified");
 
     let docker_content = format!("
     FROM rust:slim-buster
