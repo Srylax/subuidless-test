@@ -50,7 +50,7 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
         if path.is_dir() {
             copy_dir(path, &tmp_path).expect("Could not copy dir");
         } else { 
-            std::fs::copy(path, tmp_path).expect(&format!("Could not copy file. CWD: {:?}",current_dir().expect("No current dir")));
+            std::fs::copy(&path, &tmp_path).expect(&format!("Could not copy file. CWD: {:?}, path: {:?}, tmp_path: {:?}",current_dir().expect("No current dir"),path,tmp_path));
         }
         
     }
