@@ -1,6 +1,7 @@
 use copy_dir::copy_dir;
 use docker_command::{BaseCommand, BuildOpt, Launcher};
 use proc_macro::TokenStream;
+use std::collections::VecDeque;
 use std::env;
 use std::env::current_dir;
 use std::fs::{create_dir_all, File, remove_dir};
@@ -17,13 +18,13 @@ pub fn create_docker(input: TokenStream) -> TokenStream {
 
     let values = parse_macro_input!(input with Punctuated::<LitStr, Token![,]>::parse_terminated);
 
-    let mut paths = values.iter().map(LitStr::value);
+    let mut paths: VecDeque<String>= values.iter().map(LitStr::value).collect();
 
     let tmp_path = PathBuf::from(tmpdir);
     let mut dockerfile = File::create(tmp_path.join("Dockerfile")).expect("Could not open File");
 
-    let bin_dir = paths.next().expect("No Binary dir specified");
-    let copy_dirs = paths.clone().map(|path|format!("COPY {path} {path}")).collect::<Vec<String>>().join("\n");
+    let bin_dir = paths.pop_front().expect("No Binary dir specified");
+    let copy_dirs = paths.iter().map(|path|format!("COPY {path} {path}")).collect::<Vec<String>>().join("\n");
 
     let docker_content = format!("
     FROM rust:slim-buster
