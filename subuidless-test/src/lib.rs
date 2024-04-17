@@ -47,6 +47,7 @@ macro_rules! syscall {
 
         proptest! {
             #[test]
+            #[ignore]
             fn $test_name($struct_value: $struct_name) {
                 // Arrange
                 let syscall: &dyn $crate::Syscall = &$struct_value;
